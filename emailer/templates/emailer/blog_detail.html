@@ -1,0 +1,57 @@
+{% extends 'emailer/base.html' %}
+{% load static %}
+{% load my_tags %}
+{% block content %}
+
+<div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+    <div class="col p-4 d-flex flex-column position-static">
+        <h1 class="mb-0">{{ object.title }}</h1><hr>
+        <div class="mb-1 text-body-secondary"></div>
+        <p class="card-text mb-auto">{{ object.content | linebreaks }}</p>
+        <div class="col-3 m-4">
+            <div class="row-cols-1">
+                <a href="{% url 'emailer:main' %}" type="button"
+                   class="btn btn-outline-secondary btn-lg">Back</a>
+            </div>
+        </div>
+        <div class="container text-center">
+            <div class="row align-items-start">
+                <div class="col">
+                    {% if perms.emailer.delete_blog %}
+                        <small class="text-body-secondary">
+
+                            <div class="btn-group" role="group" aria-label="Basic example">
+                              <a type="button" href="{% url 'emailer:blog_edit' object.pk %}" class="btn btn-outline-secondary">Edit</a>
+                              <a type="button" href="{% url 'emailer:blog_delete' object.pk %}" class="btn btn-outline-secondary">Delete</a>
+                              <a type="button" href="{% url 'emailer:blog_toggle_activity' object.pk %}" class="btn btn-outline-secondary">
+                                  {% if object %}
+                                    {% if object.is_published %}
+                                      Unpublish
+                                    {% else %}
+                                      Publish
+                                    {% endif %}
+                                  {% endif %}
+                            </a>
+                            </div>
+                        </small>
+                    {% endif %}
+                </div>
+                <div class="col">
+                    <small class="text-body-secondary">
+                    </small>
+                </div>
+                <div class="col">
+                    <small class="text-body-secondary">
+                            Views: {{ object.view_count }}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="col-auto d-none d-lg-block shadow-sm rounded m-2">
+        <img src="{{ object.preview_image|mediapath }}" width="419" height="400"/>
+    </div>
+</div>
+
+{% endblock %}

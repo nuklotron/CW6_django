@@ -1,0 +1,35 @@
+{% extends 'emailer/base.html' %}
+{% load static %}
+{% block content %}
+    {% if user.is_authenticated %}
+    <div type="button">
+        <a href="{% url 'emailer:client_create' %}" class="btn btn-outline-success">New client</a>
+    </div>
+    {% endif %}
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th scope="col">Email</th>
+            <th scope="col">First Name</th>
+            <th scope="col">Last Name</th>
+            <th scope="col">Action</th>
+        </tr>
+        </thead>
+        {% for object in object_list %}
+            <tbody>
+            <tr>
+                <th scope="row">
+                    <a href="{% url 'emailer:client_detail' object.pk %}">{{ object.email }}</a>
+                </th>
+                <td>{{ object.first_name }}</td>
+                <td>{{ object.last_name }}</td>
+                <td>
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                        <a type="button" href="{% url 'emailer:client_update' object.pk %}" class="btn btn-outline-secondary">Edit</a>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        {% endfor %}
+    </table>
+{% endblock %}

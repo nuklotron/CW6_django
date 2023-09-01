@@ -1,0 +1,21 @@
+{% extends 'emailer/base.html' %}
+
+{% block content %}
+    <div class="col-12">
+        <form class="row" method="POST" enctype="multipart/form-data">
+
+            <div class="col-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Вход</h2>
+                    </div>
+                    <div class="card-body">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-success">Войти</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

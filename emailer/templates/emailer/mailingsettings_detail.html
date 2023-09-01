@@ -1,0 +1,37 @@
+{% extends 'emailer/base.html' %}
+{% load static %}
+{% block content %}
+    <div class="d-md-flex flex-md-equal w-100 my-md-3 pl-md-3">
+        <div class="bg-dark mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
+            <div class="my-3 py-3">
+                <p class="lead">Subscription detail</p>
+            </div>
+            <div class="bg-light box-shadow mx-auto text-black"
+                 style="width: 80%; height: 300px; border-radius: 21px 21px 0 0;">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th scope="col">Subject</th>
+                        <th scope="col">Message</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Period</th>
+                        <th scope="col">Time</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for obj in object.message.all %}
+                        <tr>
+                            <td>{{ obj }}</td>
+                            <td>{{ obj.mail | linebreaks | truncatechars:100 }}</td>
+                            <td>{{ object.status }}</td>
+                            <td>{{ object.period }}</td>
+                            <td>{{ object.time }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <a href="{% url 'emailer:subscription_list' %}" type="button" class="btn btn-secondary">Back</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'emailer/base.html' %}
+{% load static %}
+{% block content %}
+    <div class="col-12">
+        <form class="row" method="POST" enctype="multipart/form-data">
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Amount of subscriptions</h5>
+                    </div>
+                    <div class="card-body">
+                        <h4>{{ qty_subscriptions }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Active subscriptions</h5>
+                    </div>
+                    <div class="card-body">
+                        <h4>{{ active_subscriptions }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Amount of clients</h5>
+                    </div>
+                    <div class="card-body">
+                        <h4>{{ client_qty }}</h4>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <hr>
+        <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Blogspot</h4>
+                        <hr>
+                        {% include 'emailer/blog_list.html' %}
+                    </div>
+                </div>
+            </div>
+    </div>
+
+{% endblock %}
