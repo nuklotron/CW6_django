@@ -3,19 +3,19 @@ import random
 from time import strftime, gmtime
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseNotAllowed
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView
 
 from emailer.forms import ClientCreateForm, SubscriptionForm, MessageCreateForm, ManagerSubsForm
 from emailer.models import Client, Message, MailingSettings, MailingLog, Blog
-from emailer.services import send_email
+from emailer.services import send_email, get_cached_details_for_client
 
 
 class QuerysetForListMixin:
     """
-    выводим для пользователя его список объектов, кроме суперюзера
+    Выводим для пользователя его список объектов, кроме суперюзера
 
     """
     def get_queryset(self, *args, **kwargs):
@@ -38,16 +38,42 @@ class FormValidForCreateMixin:
         return super().form_valid(form)
 
 
-class ClientCreateView(LoginRequiredMixin, FormValidForCreateMixin, CreateView):
+class GetObjectInGroupMixin:
+    """
+    Ограничивает доступ к UpdateView группам manager и content_manager
+    """
+    def get_object(self, queryset=None):
+        self.object = super().get_object(queryset)
+        manager = self.request.user.groups.filter(name='manager').exists()
+        content = self.request.user.groups.filter(name='content_manager').exists()
+        if manager or content:
+            raise Http404
+        else:
+            return self.object
+
+
+class GetContextDataForCreateMixin:
+    """
+    Ограничиваем создание объектов для групп manager и content_manager
+    """
+    def get_context_data(self, **kwargs):
+        manager = self.request.user.groups.filter(name='manager').exists()
+        content = self.request.user.groups.filter(name='content_manager').exists()
+        if manager or content:
+            raise Http404
+        else:
+            return super().get_context_data(**kwargs)
+
+
+class ClientCreateView(LoginRequiredMixin, GetContextDataForCreateMixin, FormValidForCreateMixin, CreateView):
     model = Client
     form_class = ClientCreateForm
     success_url = reverse_lazy('emailer:client_list')
 
 
-class ClientUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+class ClientUpdateView(LoginRequiredMixin, GetObjectInGroupMixin, UpdateView):
     model = Client
     form_class = ClientCreateForm
-    permission_required = 'emailer.change_client'
 
     def get_success_url(self):
         return reverse('emailer:client_detail', args=[self.kwargs.get('pk')])
@@ -59,6 +85,11 @@ class ClientListView(LoginRequiredMixin, QuerysetForListMixin, ListView):
 
 class ClientDetailView(LoginRequiredMixin, DetailView):
     model = Client
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        context_data['details'] = get_cached_details_for_client(self.object.pk)
+        return context_data
 
 
 class ClientDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
@@ -84,14 +115,13 @@ def main_page(request):
     return render(request, 'emailer/index.html', context)
 
 
-class MailingSettingsCreateView(LoginRequiredMixin, PermissionRequiredMixin, FormValidForCreateMixin, CreateView):
+class MailingSettingsCreateView(LoginRequiredMixin, GetContextDataForCreateMixin, FormValidForCreateMixin, CreateView):
     model = MailingSettings
     form_class = SubscriptionForm
     success_url = reverse_lazy('emailer:subscription_list')
-    permission_required = 'emailer.add_mailingsettings'
 
 
-class MailingSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class MailingSettingsUpdateView(LoginRequiredMixin, GetObjectInGroupMixin, UserPassesTestMixin, UpdateView):
     model = MailingSettings
     form_class = SubscriptionForm
 
@@ -100,7 +130,7 @@ class MailingSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateV
 
     def test_func(self):
         first_option = self.request.user.groups.filter(name='manager').exists()
-        second_options = self.request.user.is_superuser
+        second_options = self.request.user
 
         if first_option:
             self.form_class = ManagerSubsForm
@@ -124,20 +154,18 @@ class MailingSettingsDeleteView(LoginRequiredMixin, PermissionRequiredMixin, Del
     permission_required = 'emailer.delete_mailingsettings'
 
 
-class MessageCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+class MessageCreateView(LoginRequiredMixin, GetContextDataForCreateMixin, CreateView):
     model = Message
     form_class = MessageCreateForm
     success_url = reverse_lazy('emailer:message_list')
-    permission_required = 'emailer.add_message'
 
 
-class MessageUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+class MessageUpdateView(LoginRequiredMixin, GetObjectInGroupMixin, UpdateView):
     model = Message
     form_class = MessageCreateForm
-    permission_required = 'emailer.change_message'
 
     def get_success_url(self):
-        return reverse('emailer:message_detail', args=[self.kwargs.get('pk')])
+        return reverse('emailer:message_update', args=[self.kwargs.get('pk')])
 
 
 class MessageListView(LoginRequiredMixin, ListView):
@@ -148,10 +176,9 @@ class MessageDetailView(LoginRequiredMixin, DetailView):
     model = Message
 
 
-class MessageDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+class MessageDeleteView(LoginRequiredMixin, DeleteView):
     model = Message
     success_url = reverse_lazy('emailer:message_list')
-    permission_required = 'emailer.delete_message'
 
 
 def send_mails(request):

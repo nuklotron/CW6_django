@@ -1,9 +1,10 @@
 import smtplib
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import send_mail
 
-from emailer.models import MailingLog
+from emailer.models import MailingLog, Client
 
 
 def send_email(*args):
@@ -41,3 +42,17 @@ def send_email(*args):
             status = MailingLog.STATUS_FAILED
             new_log = MailingLog.objects.create(status=status, client=client, subscription=subscription)
             new_log.save()
+
+
+def get_cached_details_for_client(client_pk):
+    if settings.CACHE_ENABLED:
+        key = f'details_list_{client_pk}'
+        detail_list = cache.get(key)
+        if detail_list is None:
+            detail_list = Client.objects.filter(pk=client_pk)
+            cache.set(key, detail_list)
+
+    else:
+        detail_list = Client.objects.filter(pk=client_pk)
+
+    return detail_list
