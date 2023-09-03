@@ -26,7 +26,6 @@
                         <a href="{% url 'emailer:subscription_list' %}" type="button" class="btn btn-secondary">Back</a>
                         {% if object %}
                             <a href="{% url 'emailer:subscription_delete' object.pk %}" type="button" class="btn btn-danger">Delete</a>
-                            <a href="{% url 'emailer:send_mails' %}" type="button" class="btn btn-secondary">Send</a>
                         {% endif %}
                     </div>
                 </div>

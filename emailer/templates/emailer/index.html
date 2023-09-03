@@ -35,12 +35,20 @@
             </div>
         </form>
         <hr>
-        <div class="col-12">
+        <div class="row">
                 <div class="card">
                     <div class="card-body">
                         <h4 class="card-title">Blogspot</h4>
+                        {% if perms.emailer.delete_blog or user.is_superuser %}
+                            <a href="{% url 'emailer:blog_create' %}" class="btn-secondary" type="button">New blog</a>
+                        {% endif %}
                         <hr>
-                        {% include 'emailer/blog_list.html' %}
+                        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+                            <div class="col-md-4 align-self-auto">
+                                {% include 'emailer/blog_list.html' %}
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>

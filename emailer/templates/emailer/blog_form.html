@@ -15,7 +15,11 @@
                                 Создать
                             {% endif %}
                         </button>
-                        <a href="{% url 'emailer:blog_view' object.pk %}" type="button" class="btn btn-secondary">Отмена</a>
+                        {% if object %}
+                            <a href="{% url 'emailer:blog_view' object.pk %}" type="button" class="btn btn-secondary">Отмена</a>
+                        {% else %}
+                            <a href="{% url 'emailer:main' %}" type="button" class="btn btn-secondary">Отмена</a>
+                        {% endif %}
                     </form>
                 </div>
             </div>

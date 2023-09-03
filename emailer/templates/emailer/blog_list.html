@@ -1,10 +1,6 @@
 {% load my_tags %}
 {% block content %}
     {% for object in blog_list %}
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-            <div class="col-md-4 align-self-auto">
-                {% include 'emailer/includes/inc_index_blog.html' %}
-            </div>
-        </div>
+        {% include 'emailer/includes/inc_index_blog.html' %}
     {% endfor %}
 {% endblock %}

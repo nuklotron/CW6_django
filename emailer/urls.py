@@ -15,7 +15,7 @@ app_name = EmailerConfig.name
 
 
 urlpatterns = [
-    path('', cache_page(60)(main_page), name='main'),
+    path('', cache_page(5)(main_page), name='main'),
 
     path('client_create/', ClientCreateView.as_view(), name='client_create'),
     path('client_list/', cache_page(60)(ClientListView.as_view()), name='client_list'),
@@ -35,9 +35,7 @@ urlpatterns = [
     path('message_update/<int:pk>/', MessageUpdateView.as_view(), name='message_update'),
     path('message_delete/<int:pk>/', MessageDeleteView.as_view(), name='message_delete'),
 
-    path('send_mails/', send_mails, name='send_mails'),
-
-    path('blog/', BlogListView.as_view(), name='blog_list'),
+    path('blog/', cache_page(60)(BlogListView.as_view()), name='blog_list'),
     path('blog/<int:pk>/veiw/', cache_page(60)(BlogDetailView.as_view()), name='blog_view'),
     path('blog/create/', BlogCreateView.as_view(), name='blog_create'),
     path('blog/edit/<int:pk>/', BlogUpdateView.as_view(), name='blog_edit'),

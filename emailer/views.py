@@ -20,7 +20,7 @@ class QuerysetForListMixin:
     """
     def get_queryset(self, *args, **kwargs):
         queryset = super().get_queryset(*args, **kwargs)
-        if not self.request.user.is_superuser:
+        if not self.request.user.is_staff:
             queryset = queryset.filter(user=self.request.user)
             return queryset
         else:
@@ -199,13 +199,13 @@ def send_mails(request):
     return HttpResponse()
 
 
-class BlogCreateView(PermissionRequiredMixin, CreateView):
+class BlogCreateView(LoginRequiredMixin, CreateView):
     model = Blog
     fields = ('title', 'content', 'preview_image', 'is_published',)
     success_url = reverse_lazy('emailer:main')
 
 
-class BlogUpdateView(PermissionRequiredMixin, UpdateView):
+class BlogUpdateView(LoginRequiredMixin, UpdateView):
     model = Blog
     fields = ('title', 'content', 'preview_image',)
     success_url = reverse_lazy('emailer:blog_list')
@@ -234,7 +234,7 @@ class BlogDetailView(DetailView):
         return self.object
 
 
-class BlogDeleteView(PermissionRequiredMixin, DeleteView):
+class BlogDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Blog
     success_url = reverse_lazy('emailer:main')
     permission_required = 'emailer.delete_blog'
