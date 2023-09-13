@@ -22,9 +22,13 @@
                 </th>
                 <td>{{ object.mail | truncatechars:200 }}</td>
                 <td>
+                    {% if user.is_staff %}
                     <div class="btn-group" role="group" aria-label="Basic example">
                         <a type="button" href="{% url 'emailer:message_update' object.pk %}" class="btn btn-outline-secondary">Edit</a>
+                    {% else %}
+                        <button type="button" href="{% url 'emailer:message_update' object.pk %}" class="btn btn-outline-secondary" disabled>Edit</button>
                     </div>
+                    {% endif %}
                 </td>
             </tr>
             </tbody>

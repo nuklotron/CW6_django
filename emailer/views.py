@@ -22,8 +22,10 @@ class QuerysetForListMixin:
         queryset = super().get_queryset(*args, **kwargs)
         if not self.request.user.is_staff:
             queryset = queryset.filter(user=self.request.user)
+            get_cached_details_for_client()
             return queryset
         else:
+            get_cached_details_for_client()
             return queryset
 
 
@@ -85,11 +87,6 @@ class ClientListView(LoginRequiredMixin, QuerysetForListMixin, ListView):
 
 class ClientDetailView(LoginRequiredMixin, DetailView):
     model = Client
-
-    def get_context_data(self, **kwargs):
-        context_data = super().get_context_data(**kwargs)
-        context_data['details'] = get_cached_details_for_client(self.object.pk)
-        return context_data
 
 
 class ClientDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
@@ -166,6 +163,15 @@ class MessageUpdateView(LoginRequiredMixin, GetObjectInGroupMixin, UpdateView):
 
     def get_success_url(self):
         return reverse('emailer:message_update', args=[self.kwargs.get('pk')])
+
+    def get_object(self, queryset=None):
+        self.object = super().get_object(queryset)
+        manager = self.request.user.groups.filter(name='manager').exists()
+        content = self.request.user.groups.filter(name='content_manager').exists()
+        if not manager or not content:
+            raise Http404
+        else:
+            return self.object
 
 
 class MessageListView(LoginRequiredMixin, ListView):

@@ -44,15 +44,13 @@ def send_email(*args):
             new_log.save()
 
 
-def get_cached_details_for_client(client_pk):
+def get_cached_details_for_client():
     if settings.CACHE_ENABLED:
-        key = f'details_list_{client_pk}'
-        detail_list = cache.get(key)
-        if detail_list is None:
-            detail_list = Client.objects.filter(pk=client_pk)
-            cache.set(key, detail_list)
-
+        key = 'client_list'
+        client_list = cache.get(key)
+        if client_list is None:
+            client_list = Client.objects.all()
+            cache.set(key, client_list)
     else:
-        detail_list = Client.objects.filter(pk=client_pk)
-
-    return detail_list
+        client_list = Client.objects.all()
+    return client_list
