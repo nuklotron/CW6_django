@@ -3,7 +3,7 @@ import random
 from time import strftime, gmtime
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
-from django.http import HttpResponse, Http404, HttpResponseNotAllowed
+from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView
@@ -157,7 +157,7 @@ class MessageCreateView(LoginRequiredMixin, GetContextDataForCreateMixin, Create
     success_url = reverse_lazy('emailer:message_list')
 
 
-class MessageUpdateView(LoginRequiredMixin, GetObjectInGroupMixin, UpdateView):
+class MessageUpdateView(LoginRequiredMixin, UpdateView):
     model = Message
     form_class = MessageCreateForm
 
@@ -167,11 +167,12 @@ class MessageUpdateView(LoginRequiredMixin, GetObjectInGroupMixin, UpdateView):
     def get_object(self, queryset=None):
         self.object = super().get_object(queryset)
         manager = self.request.user.groups.filter(name='manager').exists()
-        content = self.request.user.groups.filter(name='content_manager').exists()
-        if not manager or not content:
-            raise Http404
-        else:
+        admin = self.request.user.is_superuser
+        print(manager, admin)
+        if admin or manager:
             return self.object
+        else:
+            raise Http404
 
 
 class MessageListView(LoginRequiredMixin, ListView):
